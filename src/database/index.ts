@@ -1,6 +1,6 @@
 // database/index.ts
 
-import { User, Room, Booking, Payment, RoomType, UserRole, BookingStatus, PaymentStatus } from '../types';
+import { User, Room, Booking, Payment, RoomType, UserRole } from '../types';
 import bcrypt from 'bcryptjs';
 
 // Thread-safe in-memory database with locking mechanism
