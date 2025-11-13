@@ -1,3 +1,5 @@
+// controllers/authController.ts
+
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
@@ -8,7 +10,7 @@ import { User, UserRole, AuthToken } from '../types';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, phone, dateOfBirth, address, nationality, idNumber } = req.body;
+    const { email, password, firstName, lastName, phone } = req.body;
 
     // Check if user already exists
     const existingUser = db.getUserByEmail(email);
@@ -45,7 +47,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: newUser.role
     };
 
-    const token = jwt.sign(tokenPayload, config.jwt.secret, {
+    const token = jwt.sign(tokenPayload, config.jwt.secret as string, {
       expiresIn: config.jwt.expiresIn
     });
 
@@ -100,7 +102,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: user.role
     };
 
-    const token = jwt.sign(tokenPayload, config.jwt.secret, {
+    const token = jwt.sign(tokenPayload, config.jwt.secret as string, {
       expiresIn: config.jwt.expiresIn
     });
 
@@ -169,7 +171,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const { firstName, lastName, phone, address, nationality } = req.body;
+    const { firstName, lastName, phone } = req.body;
 
     const updates: Partial<User> = {};
     if (firstName) updates.firstName = firstName;
