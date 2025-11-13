@@ -34,7 +34,7 @@ if (config.nodeEnv === 'development') {
 }
 
 // Request timeout
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, _res: Response, next: NextFunction) => {
   req.setTimeout(30000); // 30 seconds
   next();
 });
@@ -44,7 +44,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // ============================================
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Hotel Booking API is running',
@@ -56,7 +56,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api', routes);
 
 // Welcome route
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Welcome to Hotel Booking System API',
@@ -106,7 +106,7 @@ app.get('/', (req: Request, res: Response) => {
 // ============================================
 
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
@@ -114,7 +114,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Error:', err);
 
   const statusCode = err.statusCode || 500;
