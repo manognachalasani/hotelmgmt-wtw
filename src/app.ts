@@ -39,6 +39,9 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+// Serve static files
+app.use(express.static('public'));
+
 // ============================================
 // ROUTES
 // ============================================
@@ -149,3 +152,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
