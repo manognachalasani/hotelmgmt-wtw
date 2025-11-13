@@ -47,11 +47,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: newUser.role
     };
 
-    const jwtOptions: jwt.SignOptions = {
-      expiresIn: config.jwt.expiresIn
-    };
-
-    const token = jwt.sign(tokenPayload, config.jwt.secret, jwtOptions);
+    const token = jwt.sign(tokenPayload, config.jwt.secret, {
+      expiresIn: '7d'
+    });
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser;
@@ -104,10 +102,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: user.role
     };
 
-    const token = jwt.sign(
-      tokenPayload, 
-      config.jwt.secret
-    ) as string;
+    const token = jwt.sign(tokenPayload, config.jwt.secret, {
+      expiresIn: '7d'
+    });
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
