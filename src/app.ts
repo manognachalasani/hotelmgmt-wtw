@@ -39,7 +39,9 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-// Serve static files
+// ============================================
+// SERVE FRONTEND
+// ============================================
 app.use(express.static('public'));
 
 // ============================================
@@ -58,8 +60,8 @@ app.get('/health', (_req: Request, res: Response) => {
 // API routes
 app.use('/api', routes);
 
-// Welcome route
-app.get('/', (_req: Request, res: Response) => {
+// API Documentation (moved from root)
+app.get('/api-info', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Welcome to Hotel Booking System API',
@@ -152,4 +154,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-
