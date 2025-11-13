@@ -13,8 +13,17 @@ const app = express();
 // MIDDLEWARE
 // ============================================
 
-// Security headers
-app.use(helmet());
+// Security headers - Configure for development
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}));
 
 // CORS
 app.use(cors({
