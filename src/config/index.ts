@@ -10,7 +10,7 @@ export const config = {
   
   jwt: {
     secret: (process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production') as string,
-    expiresIn: '7d' as string
+    expiresIn: '7d'
   },
   
   email: {
