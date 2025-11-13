@@ -9,8 +9,8 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
-    expiresIn: '7d'
+    secret: (process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production') as string,
+    expiresIn: '7d' as string
   },
   
   email: {
