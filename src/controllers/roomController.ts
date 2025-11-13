@@ -184,7 +184,7 @@ export const deleteRoom = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-export const getRoomTypes = async (req: Request, res: Response): Promise<void> => {
+export const getRoomTypes = async (_req: Request, res: Response): Promise<void> => {
   try {
     const roomTypes = Object.values(RoomType);
     
