@@ -8,8 +8,7 @@ import {
   BookingStatus, 
   PaymentStatus, 
   RoomAvailability,
-  AvailabilityQuery,
-  RoomType 
+  AvailabilityQuery
 } from '../types';
 
 class BookingService {
