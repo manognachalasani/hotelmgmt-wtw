@@ -47,9 +47,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: newUser.role
     };
 
-    const token = jwt.sign(tokenPayload, config.jwt.secret as string, {
-      expiresIn: config.jwt.expiresIn
-    });
+    const token = jwt.sign(
+      tokenPayload, 
+      config.jwt.secret, 
+      { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
+    );
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser;
