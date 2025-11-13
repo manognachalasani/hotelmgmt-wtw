@@ -1,7 +1,7 @@
 // middleware/auth.ts
 
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
 import { AuthToken, UserRole } from '../types';
 
