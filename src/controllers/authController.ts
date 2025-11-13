@@ -3,7 +3,7 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { db } from '../database';
 import { config } from '../config';
 import { User, UserRole, AuthToken } from '../types';
