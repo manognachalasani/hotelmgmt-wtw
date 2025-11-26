@@ -2,7 +2,7 @@
 
 import nodemailer from 'nodemailer';
 import { config } from '../config';
-import { BookingConfirmationData, EmailOptions } from '../types';
+import { BookingConfirmationData, EmailOptions, Payment } from '../types';
 
 class EmailService {
   private transporter: nodemailer.Transporter;
@@ -35,14 +35,18 @@ class EmailService {
   async sendBookingConfirmation(data: BookingConfirmationData): Promise<boolean> {
     const { booking, guest, room, payment } = data;
 
-    const checkInDate = new Date(booking.checkInDate).toLocaleDateString('en-US', {
+    // Safely convert dates (handle both Date objects and strings)
+    const checkIn = booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate);
+    const checkOut = booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate);
+
+    const checkInDate = checkIn.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
 
-    const checkOutDate = new Date(booking.checkOutDate).toLocaleDateString('en-US', {
+    const checkOutDate = checkOut.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -50,7 +54,7 @@ class EmailService {
     });
 
     const nights = Math.ceil(
-      (booking.checkOutDate.getTime() - booking.checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
     );
 
     const html = `
@@ -236,7 +240,9 @@ class EmailService {
     });
   }
 
-  async sendBookingCancellation(data: BookingConfirmationData): Promise<boolean> {
+  async sendBookingCancellation(
+    data: Omit<BookingConfirmationData, 'payment'> & { payment?: Payment }
+  ): Promise<boolean> {
     const { booking, guest, room } = data;
 
     const html = `
@@ -279,8 +285,8 @@ class EmailService {
           <p><strong>Cancelled Booking Details:</strong></p>
           <ul>
             <li>Room: ${room.type} - ${room.roomNumber}</li>
-            <li>Check-in Date: ${new Date(booking.checkInDate).toLocaleDateString()}</li>
-            <li>Check-out Date: ${new Date(booking.checkOutDate).toLocaleDateString()}</li>
+            <li>Check-in Date: ${(booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate)).toLocaleDateString()}</li>
+            <li>Check-out Date: ${(booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate)).toLocaleDateString()}</li>
           </ul>
           
           <p>If a refund is applicable, it will be processed within 5-7 business days.</p>

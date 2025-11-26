@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
   
   jwt: {
@@ -39,7 +39,7 @@ export const config = {
 
 // .env.example file content:
 /*
-PORT=3000
+PORT=4000
 NODE_ENV=development
 
 # JWT Configuration

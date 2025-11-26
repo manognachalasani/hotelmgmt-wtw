@@ -24,8 +24,8 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
     errors.push('Last name is required');
   }
 
-  if (!phone || !/^\+?[\d\s-()]+$/.test(phone)) {
-    errors.push('Valid phone number is required');
+  if (!phone || !/^\+?[\d\s\-().]+$/.test(phone) || !/\d/.test(phone)) {
+    errors.push('Valid phone number is required (must contain at least one digit)');
   }
 
   if (errors.length > 0) {

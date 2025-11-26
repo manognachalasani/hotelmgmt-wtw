@@ -10,9 +10,10 @@ class Database {
   private bookings: Map<string, Booking> = new Map();
   private payments: Map<string, Payment> = new Map();
   private locks: Map<string, boolean> = new Map();
+  public readonly ready: Promise<void>;
 
   constructor() {
-    this.initializeData();
+    this.ready = this.initializeData();
   }
 
   // Lock mechanism for preventing race conditions
@@ -34,7 +35,7 @@ class Database {
     this.locks.delete(resourceId);
   }
 
-  private async initializeData() {
+  private async initializeData(): Promise<void> {
     // Create default admin user
     const adminPassword = await bcrypt.hash('admin123', 10);
     this.users.set('admin-1', {
@@ -235,3 +236,4 @@ class Database {
 }
 
 export const db = new Database();
+export const dbReady = db.ready;
