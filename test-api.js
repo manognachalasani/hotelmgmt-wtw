@@ -1,7 +1,7 @@
 // test-api.js - API Testing Script
 // Run with: node test-api.js
 
-const baseURL = process.env.API_BASE_URL || 'http://localhost:4000/api';
+const baseURL = 'http://localhost:3000/api';
 let guestToken = '';
 let staffToken = '';
 let adminToken = '';
@@ -327,7 +327,7 @@ Create a Postman collection with these folders:
    - POST Check-out (Staff/Admin)
 
 Variables to set:
-- {{baseUrl}}: http://localhost:4000/api
+- {{baseUrl}}: http://localhost:3000/api
 - {{guestToken}}: (set after login)
 - {{staffToken}}: (set after login)
 - {{adminToken}}: (set after login)

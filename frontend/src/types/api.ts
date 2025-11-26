@@ -12,7 +12,6 @@ export interface ApiSuccessResponse<T> {
 export interface ApiErrorResponse {
   success: false;
   message?: string;
-  errors?: string[];
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
@@ -39,9 +38,6 @@ export interface Payment {
   paymentMethod: string;
   transactionId?: string;
   paidAt?: string;
-  processingFee?: number;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface BookingRecord {
@@ -115,14 +111,7 @@ export interface AvailabilityQuery {
 export interface RoomFilters {
   type?: RoomType | '';
   minCapacity?: string;
-  minPrice?: number;
-  maxPrice?: number;
-}
-
-export interface GuestRecord extends AuthenticatedUser {
-  bookingsCount?: number;
-  lastStay?: string | null;
-  currentStatus?: string;
+  maxPrice?: string;
 }
 
 
