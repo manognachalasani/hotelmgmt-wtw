@@ -23,6 +23,7 @@ router.post('/auth/register', validateRegistration, authController.register);
 router.post('/auth/login', validateLogin, authController.login);
 router.get('/auth/profile', authenticate, authController.getProfile);
 router.put('/auth/profile', authenticate, authController.updateProfile);
+router.get('/auth/users', authenticate, authorize(UserRole.ADMIN), authController.getAllUsers);
 
 // ============================================
 // ROOM ROUTES
