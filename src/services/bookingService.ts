@@ -10,8 +10,6 @@ import {
   RoomAvailability,
   AvailabilityQuery
 } from '../types';
-import { config } from '../config';
-import { ValidationError, NotFoundError } from '../utils/errors';
 
 class BookingService {
   /**
@@ -58,41 +56,8 @@ class BookingService {
   async getAvailableRooms(query: AvailabilityQuery): Promise<RoomAvailability[]> {
     const { checkInDate, checkOutDate, roomType, minCapacity, maxPrice } = query;
     
-    // If dates are not provided, return all rooms with availability set to true
-    if (!checkInDate || !checkOutDate) {
-      const allRooms = db.getAllRooms();
-      const availableRooms: RoomAvailability[] = [];
-
-      for (const room of allRooms) {
-        // Apply filters
-        if (roomType && room.type !== roomType) continue;
-        if (minCapacity && room.capacity < minCapacity) continue;
-        if (maxPrice && room.pricePerNight > maxPrice) continue;
-
-        availableRooms.push({
-          roomId: room.id,
-          roomNumber: room.roomNumber,
-          type: room.type,
-          isAvailable: true,
-          availableFrom: undefined,
-          pricePerNight: room.pricePerNight
-        });
-      }
-
-      return availableRooms;
-    }
-    
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
-    
-    // Validate dates
-    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
-      throw new ValidationError('Invalid date format');
-    }
-    
-    if (checkOut <= checkIn) {
-      throw new ValidationError('Check-out date must be after check-in date');
-    }
     
     const allRooms = db.getAllRooms();
     const availableRooms: RoomAvailability[] = [];
@@ -146,29 +111,12 @@ class BookingService {
     numberOfGuests: number,
     specialRequests?: string
   ): Promise<{ booking: Booking; payment: Payment } | null> {
-    // Validate inputs
-    if (!guestId || !roomId) {
-      throw new ValidationError('Guest ID and Room ID are required');
-    }
-
-    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
-      throw new ValidationError('Invalid date format');
-    }
-
-    if (checkOutDate <= checkInDate) {
-      throw new ValidationError('Check-out date must be after check-in date');
-    }
-
-    if (!numberOfGuests || numberOfGuests < 1) {
-      throw new ValidationError('Number of guests must be at least 1');
-    }
-
     // Acquire lock for the room to prevent double-booking
     const lockKey = `room-booking-${roomId}`;
     const lockAcquired = await db.acquireLock(lockKey, 10000);
 
     if (!lockAcquired) {
-      throw new ValidationError('Unable to process booking at this time. Please try again.');
+      throw new Error('Unable to process booking at this time. Please try again.');
     }
 
     try {
@@ -181,12 +129,12 @@ class BookingService {
 
       const room = db.getRoomById(roomId);
       if (!room) {
-        throw new NotFoundError('Room not found');
+        throw new Error('Room not found');
       }
 
       // Validate capacity
       if (numberOfGuests > room.capacity) {
-        throw new ValidationError(`Room capacity exceeded. Maximum capacity: ${room.capacity}`);
+        throw new Error(`Room capacity exceeded. Maximum capacity: ${room.capacity}`);
       }
 
       // Calculate total price
@@ -194,8 +142,6 @@ class BookingService {
         (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
       );
       const totalPrice = room.pricePerNight * nights;
-      const processingFee = Number((totalPrice * config.payment.processingFee).toFixed(2));
-      const paymentAmount = totalPrice + processingFee;
 
       // Create booking
       const booking: Booking = {
@@ -216,11 +162,10 @@ class BookingService {
       const payment: Payment = {
         id: uuidv4(),
         bookingId: booking.id,
-        amount: paymentAmount,
-        currency: config.payment.currency,
+        amount: totalPrice,
+        currency: 'USD',
         status: PaymentStatus.PENDING,
         paymentMethod: 'CREDIT_CARD',
-        processingFee,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -238,39 +183,27 @@ class BookingService {
 
   /**
    * Process payment simulation
-   * For test payments (amount = 0 or test payment IDs), always succeeds
-   * For regular payments, simulates 100% success rate (since this is a test environment)
    */
   async processPayment(paymentId: string): Promise<boolean> {
-    if (!paymentId || paymentId.trim().length === 0) {
-      throw new ValidationError('Payment ID is required');
-    }
-
     const payment = db.getPaymentById(paymentId);
     if (!payment) {
-      throw new NotFoundError('Payment not found');
+      throw new Error('Payment not found');
     }
 
     // Update payment status to processing
     db.updatePayment(paymentId, { status: PaymentStatus.PROCESSING });
 
     // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Always succeed for test/simulation environment
-    // Check if this is a test payment (amount = 0 or specific test pattern)
-    const isTestPayment = payment.amount === 0 || payment.id.startsWith('TEST-');
-    
-    // For test environment, always succeed
-    const success = true;
+    // Simulate payment success (90% success rate)
+    const success = Math.random() > 0.1;
 
     if (success) {
       // Update payment
       db.updatePayment(paymentId, {
         status: PaymentStatus.COMPLETED,
-        transactionId: isTestPayment 
-          ? `TEST-TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-          : `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         paidAt: new Date()
       });
 
@@ -299,13 +232,9 @@ class BookingService {
    * Cancel a booking
    */
   async cancelBooking(bookingId: string): Promise<boolean> {
-    if (!bookingId || bookingId.trim().length === 0) {
-      throw new ValidationError('Booking ID is required');
-    }
-
     const booking = db.getBookingById(bookingId);
     if (!booking) {
-      throw new NotFoundError('Booking not found');
+      throw new Error('Booking not found');
     }
 
     if (booking.status === BookingStatus.CANCELLED) {
@@ -332,13 +261,9 @@ class BookingService {
    * Check in a guest
    */
   async checkIn(bookingId: string): Promise<boolean> {
-    if (!bookingId || bookingId.trim().length === 0) {
-      throw new ValidationError('Booking ID is required');
-    }
-
     const booking = db.getBookingById(bookingId);
     if (!booking) {
-      throw new NotFoundError('Booking not found');
+      throw new Error('Booking not found');
     }
 
     if (booking.status !== BookingStatus.CONFIRMED) {
@@ -362,13 +287,9 @@ class BookingService {
    * Check out a guest
    */
   async checkOut(bookingId: string): Promise<boolean> {
-    if (!bookingId || bookingId.trim().length === 0) {
-      throw new ValidationError('Booking ID is required');
-    }
-
     const booking = db.getBookingById(bookingId);
     if (!booking) {
-      throw new NotFoundError('Booking not found');
+      throw new Error('Booking not found');
     }
 
     if (booking.status !== BookingStatus.CHECKED_IN) {

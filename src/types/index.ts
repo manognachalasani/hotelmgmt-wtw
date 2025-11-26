@@ -86,7 +86,6 @@ export interface Payment {
   paymentMethod: string;
   transactionId?: string;
   paidAt?: Date;
-  processingFee?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -124,8 +123,8 @@ export interface BookingResponse {
 }
 
 export interface AvailabilityQuery {
-  checkInDate?: string;
-  checkOutDate?: string;
+  checkInDate: string;
+  checkOutDate: string;
   roomType?: RoomType;
   minCapacity?: number;
   maxPrice?: number;

@@ -6,7 +6,6 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { config } from './config';
 import routes from './routes';
-import { dbReady } from './database';
 
 const app = express();
 
@@ -148,28 +147,19 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 
 const PORT = config.port;
 
-const startServer = async (): Promise<void> => {
-  await dbReady;
-
-  app.listen(PORT, () => {
-    console.log('='.repeat(60));
-    console.log('🏨 Hotel Booking System API');
-    console.log('='.repeat(60));
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🌍 Environment: ${config.nodeEnv}`);
-    console.log(`📝 API URL: http://localhost:${PORT}`);
-    console.log(`💚 Health check: http://localhost:${PORT}/health`);
-    console.log('='.repeat(60));
-    console.log('Default Credentials:');
-    console.log('  Admin: admin@hotel.com / admin123');
-    console.log('  Staff: staff@hotel.com / staff123');
-    console.log('='.repeat(60));
-  });
-};
-
-startServer().catch(error => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
+app.listen(PORT, () => {
+  console.log('='.repeat(60));
+  console.log('🏨 Hotel Booking System API');
+  console.log('='.repeat(60));
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${config.nodeEnv}`);
+  console.log(`📝 API URL: http://localhost:${PORT}`);
+  console.log(`💚 Health check: http://localhost:${PORT}/health`);
+  console.log('='.repeat(60));
+  console.log('Default Credentials:');
+  console.log('  Admin: admin@hotel.com / admin123');
+  console.log('  Staff: staff@hotel.com / staff123');
+  console.log('='.repeat(60));
 });
 
 export default app;

@@ -8,28 +8,12 @@ import { db } from '../database';
 import { config } from '../config';
 import { User, UserRole, AuthToken } from '../types';
 
-// Helper function to serialize user dates
-const serializeUser = (user: User) => {
-  const { password: _, ...userWithoutPassword } = user;
-  return {
-    ...userWithoutPassword,
-    createdAt: user.createdAt.toISOString(),
-    updatedAt: user.updatedAt.toISOString()
-  };
-};
-
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, phone } = req.body;
 
-    // Sanitize inputs
-    const sanitizedEmail = email ? email.trim().toLowerCase() : '';
-    const sanitizedFirstName = firstName ? firstName.trim() : '';
-    const sanitizedLastName = lastName ? lastName.trim() : '';
-    const sanitizedPhone = phone ? phone.trim() : '';
-
     // Check if user already exists
-    const existingUser = db.getUserByEmail(sanitizedEmail);
+    const existingUser = db.getUserByEmail(email);
     if (existingUser) {
       res.status(409).json({
         success: false,
@@ -44,12 +28,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Create new user
     const newUser: User = {
       id: uuidv4(),
-      email: sanitizedEmail,
+      email,
       password: hashedPassword,
       role: UserRole.GUEST,
-      firstName: sanitizedFirstName,
-      lastName: sanitizedLastName,
-      phone: sanitizedPhone,
+      firstName,
+      lastName,
+      phone,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -67,11 +51,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       expiresIn: '7d'
     });
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = newUser;
+
     res.status(201).json({
       success: true,
       message: 'Registration successful',
       data: {
-        user: serializeUser(newUser),
+        user: userWithoutPassword,
         token
       }
     });
@@ -88,11 +75,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
-    // Sanitize email
-    const sanitizedEmail = email ? email.trim().toLowerCase() : '';
-
     // Find user by email
-    const user = db.getUserByEmail(sanitizedEmail);
+    const user = db.getUserByEmail(email);
     if (!user) {
       res.status(401).json({
         success: false,
@@ -122,11 +106,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       expiresIn: '7d'
     });
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
-        user: serializeUser(user),
+        user: userWithoutPassword,
         token
       }
     });
@@ -158,9 +145,12 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
     res.status(200).json({
       success: true,
-      data: serializeUser(user)
+      data: userWithoutPassword
     });
   } catch (error) {
     console.error('Get profile error:', error);
@@ -184,24 +174,9 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
     const { firstName, lastName, phone } = req.body;
 
     const updates: Partial<User> = {};
-    if (firstName) {
-      const sanitized = firstName.trim();
-      if (sanitized.length > 0) {
-        updates.firstName = sanitized;
-      }
-    }
-    if (lastName) {
-      const sanitized = lastName.trim();
-      if (sanitized.length > 0) {
-        updates.lastName = sanitized;
-      }
-    }
-    if (phone) {
-      const sanitized = phone.trim();
-      if (sanitized.length > 0) {
-        updates.phone = sanitized;
-      }
-    }
+    if (firstName) updates.firstName = firstName;
+    if (lastName) updates.lastName = lastName;
+    if (phone) updates.phone = phone;
 
     const updatedUser = db.updateUser(req.user.userId, updates);
 
@@ -213,95 +188,19 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
-      data: serializeUser(updatedUser)
+      data: userWithoutPassword
     });
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update profile'
-    });
-  }
-};
-
-export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    if (!req.user) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
-      return;
-    }
-
-    // Only admins can get all users
-    if (req.user.role !== UserRole.ADMIN) {
-      res.status(403).json({
-        success: false,
-        message: 'Access denied. Admin role required.'
-      });
-      return;
-    }
-
-    const users = db.getAllUsers();
-    const allBookings = db.getAllBookings();
-    
-    // Filter to get only guests (GUEST role) and enrich with booking data
-    const guests = users
-      .filter(user => user.role === UserRole.GUEST)
-      .map(user => {
-        const userBookings = allBookings.filter(booking => booking.guestId === user.id);
-        const confirmedBookings = userBookings.filter(b => 
-          b.status === 'CONFIRMED' || b.status === 'CHECKED_IN' || b.status === 'CHECKED_OUT'
-        );
-        
-        // Find last stay date
-        let lastStay: string | null = null;
-        if (confirmedBookings.length > 0) {
-          const lastBooking = confirmedBookings.sort((a, b) => 
-            new Date(b.checkOutDate).getTime() - new Date(a.checkOutDate).getTime()
-          )[0];
-          lastStay = lastBooking.checkOutDate instanceof Date 
-            ? lastBooking.checkOutDate.toISOString().split('T')[0]
-            : new Date(lastBooking.checkOutDate).toISOString().split('T')[0];
-        }
-
-        // Determine current status based on bookings
-        let status = 'Checked-out';
-        const activeBookings = userBookings.filter(b => 
-          b.status === 'CHECKED_IN' || (b.status === 'CONFIRMED' && new Date(b.checkInDate) <= new Date())
-        );
-        const upcomingBookings = userBookings.filter(b => 
-          b.status === 'CONFIRMED' && new Date(b.checkInDate) > new Date()
-        );
-        
-        if (activeBookings.length > 0) {
-          status = 'Checked-in';
-        } else if (upcomingBookings.length > 0) {
-          status = 'Upcoming';
-        }
-
-        return {
-          ...serializeUser(user),
-          bookingsCount: userBookings.length,
-          lastStay,
-          currentStatus: status
-        };
-      });
-
-    res.status(200).json({
-      success: true,
-      data: guests,
-      count: guests.length
-    });
-  } catch (error) {
-    console.error('Get all users error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve users'
     });
   }
 };
