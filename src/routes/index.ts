@@ -1,16 +1,17 @@
-// routes/index.ts
+// src/routes/index.ts
 
 import express from 'express';
 import * as authController from '../controllers/authController';
 import * as roomController from '../controllers/roomController';
 import * as bookingController from '../controllers/bookingController';
 import { authenticate, authorize } from '../middleware/auth';
-import { 
-  validateRegistration, 
-  validateLogin, 
-  validateRoomCreation, 
+import { emailService } from '../services/emailService';
+import {
+  validateRegistration,
+  validateLogin,
+  validateRoomCreation,
   validateBookingRequest,
-  validateAvailabilityQuery 
+  validateAvailabilityQuery
 } from '../middleware/validation';
 import { UserRole } from '../types';
 
@@ -23,7 +24,6 @@ router.post('/auth/register', validateRegistration, authController.register);
 router.post('/auth/login', validateLogin, authController.login);
 router.get('/auth/profile', authenticate, authController.getProfile);
 router.put('/auth/profile', authenticate, authController.updateProfile);
-router.get('/auth/users', authenticate, authorize(UserRole.ADMIN), authController.getAllUsers);
 
 // ============================================
 // ROOM ROUTES
@@ -75,11 +75,7 @@ router.post(
 );
 
 // Get user's own bookings
-router.get(
-  '/bookings/my-bookings',
-  authenticate,
-  bookingController.getMyBookings
-);
+router.get('/bookings/my-bookings', authenticate, bookingController.getMyBookings);
 
 // Get all bookings (staff and admin only)
 router.get(
@@ -90,18 +86,10 @@ router.get(
 );
 
 // Get specific booking
-router.get(
-  '/bookings/:id',
-  authenticate,
-  bookingController.getBookingById
-);
+router.get('/bookings/:id', authenticate, bookingController.getBookingById);
 
 // Cancel booking
-router.post(
-  '/bookings/:id/cancel',
-  authenticate,
-  bookingController.cancelBooking
-);
+router.post('/bookings/:id/cancel', authenticate, bookingController.cancelBooking);
 
 // Check-in (staff and admin only)
 router.post(
@@ -119,5 +107,38 @@ router.post(
   bookingController.checkOutGuest
 );
 
+// ============================================
+// Development / Test routes
+// ============================================
+
+// Test email endpoint — sends a simple email to the configured EMAIL_USER.
+// Keep for testing; optionally protect with authenticate/authorize for production.
+router.get('/test-email', async (_req, res) => {
+  try {
+    const to = process.env.EMAIL_USER;
+    if (!to) {
+      return res.status(400).json({ success: false, message: 'EMAIL_USER not configured' });
+    }
+
+    const success = await emailService.sendEmail({
+      to,
+      subject: 'Test Email - Hotel Booking System',
+      html: `
+        <h2>Test Email</h2>
+        <p>If you receive this message in your inbox, Gmail SMTP is configured correctly.</p>
+      `
+    });
+
+    return res.json({
+      success,
+      message: success
+        ? 'Email sent successfully (check Inbox & Sent in Gmail)'
+        : 'Email failed to send (check server logs)'
+    });
+  } catch (err: any) {
+    console.error('TEST EMAIL ERROR:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Error sending test email' });
+  }
+});
+
 export default router;
-module.exports = router;
