@@ -10,9 +10,7 @@ import { dbReady } from './database';
 
 const app = express();
 
-// ============================================
 // MIDDLEWARE
-// ============================================
 
 // Security headers - Configure for development
 app.use(helmet({
@@ -49,14 +47,9 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-// ============================================
 // SERVE FRONTEND
-// ============================================
 app.use(express.static('public'));
-
-// ============================================
 // ROUTES
-// ============================================
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
@@ -116,9 +109,7 @@ app.get('/api-info', (_req: Request, res: Response) => {
   });
 });
 
-// ============================================
 // ERROR HANDLING
-// ============================================
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
@@ -142,9 +133,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-// ============================================
 // START SERVER
-// ============================================
 
 const PORT = config.port;
 
@@ -153,12 +142,12 @@ const startServer = async (): Promise<void> => {
 
   app.listen(PORT, () => {
     console.log('='.repeat(60));
-    console.log('🏨 Hotel Booking System API');
+    console.log('Hotel Booking System API');
     console.log('='.repeat(60));
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🌍 Environment: ${config.nodeEnv}`);
-    console.log(`📝 API URL: http://localhost:${PORT}`);
-    console.log(`💚 Health check: http://localhost:${PORT}/health`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${config.nodeEnv}`);
+    console.log(`API URL: http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
     console.log('='.repeat(60));
     console.log('Default Credentials:');
     console.log('  Admin: admin@hotel.com / admin123');

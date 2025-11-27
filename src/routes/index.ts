@@ -17,17 +17,15 @@ import { UserRole } from '../types';
 
 const router = express.Router();
 
-// ============================================
 // AUTHENTICATION ROUTES
-// ============================================
+
 router.post('/auth/register', validateRegistration, authController.register);
 router.post('/auth/login', validateLogin, authController.login);
 router.get('/auth/profile', authenticate, authController.getProfile);
 router.put('/auth/profile', authenticate, authController.updateProfile);
 
-// ============================================
-// ROOM ROUTES
-// ============================================
+  // ROOM ROUTES
+
 // Public routes
 router.get('/rooms', roomController.getAllRooms);
 router.get('/rooms/types', roomController.getRoomTypes);
@@ -56,9 +54,7 @@ router.delete(
   roomController.deleteRoom
 );
 
-// ============================================
 // BOOKING ROUTES
-// ============================================
 // Check availability (public)
 router.get(
   '/bookings/availability',
@@ -107,9 +103,7 @@ router.post(
   bookingController.checkOutGuest
 );
 
-// ============================================
 // Development / Test routes
-// ============================================
 
 // Test email endpoint — sends a simple email to the configured EMAIL_USER.
 // Keep for testing; optionally protect with authenticate/authorize for production.

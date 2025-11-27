@@ -15,11 +15,11 @@ export const config = {
   
   email: {
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '465'),   // Gmail secure port
-    secure: process.env.EMAIL_SECURE === 'true',        // true for Gmail App Passwords
+    port: parseInt(process.env.EMAIL_PORT || '465'),
+    secure: process.env.EMAIL_SECURE === 'true',
     auth: {
       user: process.env.EMAIL_USER || 'your-email@gmail.com',
-      pass: process.env.EMAIL_PASS || 'your-app-password'  // UPDATED (EMAIL_PASS instead of EMAIL_PASSWORD)
+      pass: process.env.EMAIL_PASS || 'your-app-password'
     },
     from: process.env.EMAIL_FROM || 'Hotel Booking System <your-email@gmail.com>'
   },

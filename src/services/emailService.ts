@@ -134,7 +134,7 @@ class EmailService {
       </head>
       <body>
         <div class="header">
-          <h1>🏨 Booking Confirmation</h1>
+          <h1>Booking Confirmation</h1>
           <p>Thank you for choosing our hotel!</p>
         </div>
         
