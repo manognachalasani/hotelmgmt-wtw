@@ -75,7 +75,7 @@ const NavigationBar: React.FC = () => {
                 </defs>
               </svg>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold leading-tight tracking-[-0.015em]">StayPlanner</h2>
+            <h2 className="text-lg sm:text-xl font-bold leading-tight tracking-[-0.015em]">hotel samia</h2>
           </Link>
 
           {/* Desktop Navigation - Three Main Pages */}

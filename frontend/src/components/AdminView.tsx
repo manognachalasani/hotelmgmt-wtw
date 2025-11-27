@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { GuestRecord } from '../types/api';
+import { GuestRecord, BookingRecord } from '../types/api';
 
 const AdminView: React.FC = () => {
   const navigate = useNavigate();
@@ -144,6 +144,35 @@ const AdminView: React.FC = () => {
     navigate('/auth');
   };
 
+  const handleViewGuest = async (guest: GuestRecord) => {
+    try {
+      // Fetch all bookings
+      const bookingsResponse = await api.getAllBookings();
+      const allBookings = bookingsResponse.data;
+      
+      // Filter bookings for this guest
+      const guestBookings = allBookings.filter(booking => booking.guestId === guest.id);
+      
+      if (guestBookings.length === 0) {
+        alert(`${guest.firstName} ${guest.lastName} has no bookings yet.`);
+        return;
+      }
+      
+      // Get the most recent booking (by createdAt date)
+      const mostRecentBooking = guestBookings.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Most recent first
+      })[0];
+      
+      // Navigate to booking confirmation page
+      navigate(`/booking/${mostRecentBooking.id}/confirmation`);
+    } catch (err: any) {
+      console.error('Error fetching bookings:', err);
+      alert(`Failed to load bookings: ${err.message || 'Unknown error'}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
@@ -162,7 +191,7 @@ const AdminView: React.FC = () => {
               <span>A</span>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-text-light dark:text-text-dark text-base font-bold leading-normal">All-in-One Stays</h1>
+              <h1 className="text-text-light dark:text-text-dark text-base font-bold leading-normal">hotel samia</h1>
               <p className="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-normal">Admin Panel</p>
             </div>
           </div>
@@ -313,8 +342,8 @@ const AdminView: React.FC = () => {
                           <div className="flex justify-end gap-2">
                             <button 
                               className="p-2 text-text-muted-light dark:text-text-muted-dark hover:text-primary rounded-full hover:bg-primary/10"
-                              onClick={() => alert(`View details for ${guest.firstName} ${guest.lastName}`)}
-                              title="View"
+                              onClick={() => handleViewGuest(guest)}
+                              title="View Booking"
                             >
                               <span className="material-symbols-outlined text-base">visibility</span>
                             </button>

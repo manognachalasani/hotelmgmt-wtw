@@ -9,6 +9,23 @@ const BookingConfirmationPage: React.FC = () => {
   const [booking, setBooking] = useState<BookingRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = () => {
+      const userStr = localStorage.getItem('hotelmgmt.user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setIsAdmin(user.role === 'ADMIN');
+        } catch (e) {
+          setIsAdmin(false);
+        }
+      }
+    };
+    checkAdmin();
+  }, []);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -184,7 +201,7 @@ const BookingConfirmationPage: React.FC = () => {
                   <path clipRule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor" fillRule="evenodd"></path>
                 </svg>
               </div>
-              <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Serene Stays</h2>
+              <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">hotel samia</h2>
             </div>
             <div className="hidden md:flex items-center gap-8">
               <a className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer" onClick={() => navigate('/')}>Home</a>
@@ -327,12 +344,22 @@ const BookingConfirmationPage: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
-              <button
-                onClick={() => navigate('/')}
-                className="w-full sm:w-auto flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
-              >
-                <span className="truncate">Go to My Bookings</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="w-full sm:w-auto flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
+                >
+                  <span className="truncate">Back to Admin</span>
+                </button>
+              )}
+              {!isAdmin && (
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full sm:w-auto flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
+                >
+                  <span className="truncate">Go to My Bookings</span>
+                </button>
+              )}
               <button
                 onClick={() => navigate('/')}
                 className="w-full sm:w-auto flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-base font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
@@ -347,7 +374,7 @@ const BookingConfirmationPage: React.FC = () => {
       <footer className="w-full border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-6 text-sm text-slate-500 dark:text-slate-400">
-            <p>© 2024 Serene Stays. All rights reserved.</p>
+            <p>© 2024 hotel samia. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <a className="hover:text-primary transition-colors cursor-pointer">Terms of Service</a>
               <a className="hover:text-primary transition-colors cursor-pointer">Privacy Policy</a>

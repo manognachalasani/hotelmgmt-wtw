@@ -309,7 +309,7 @@ const AuthPage: React.FC = () => {
               </div>
 
               <footer className="mt-6 lg:mt-8 pt-4 lg:pt-6 text-center text-xs lg:text-sm text-slate-400 dark:text-slate-500">
-                <p>© 2024 StayPlanner. All Rights Reserved.</p>
+                <p>© 2024 hotel samia. All Rights Reserved.</p>
               </footer>
             </div>
           </div>

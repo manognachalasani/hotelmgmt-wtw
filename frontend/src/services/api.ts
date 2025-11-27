@@ -302,4 +302,13 @@ export const api = {
       token: token !== undefined ? token : getAuthToken(),
     });
   },
+
+  /**
+   * Get all bookings (Admin/Staff only)
+   */
+  async getAllBookings(token?: string | null): Promise<ApiSuccessResponse<BookingRecord[]>> {
+    return request<BookingRecord[]>('/bookings', {
+      token: token !== undefined ? token : getAuthToken(),
+    });
+  },
 };
